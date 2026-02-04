@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Album - FootCollect</title>
     <style>
-        /* --- MÊME STYLE QUE L'ACCUEIL --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1a1a2e;
@@ -13,80 +12,129 @@
             text-align: center;
             padding: 20px;
         }
-        h1 { color: #fcdab7; }
-        
+
+        /* En-tête */
+        header {
+            margin-bottom: 40px;
+        }
+        h1 { color: #fcdab7; margin-bottom: 5px; }
+        .stats { color: #e94560; font-weight: bold; font-size: 1.2rem; }
+
         /* Bouton retour */
         .btn-back {
             display: inline-block;
             margin-bottom: 20px;
-            color: #e94560;
+            color: white;
+            background-color: #16213e;
             text-decoration: none;
             border: 1px solid #e94560;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 30px;
+            transition: 0.3s;
         }
+        .btn-back:hover { background-color: #e94560; }
 
         /* Grille de l'album */
         #album-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap; /* Permet de passer à la ligne */
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        /* Carte dans l'album (plus petite) */
+        /* --- DESIGN DE LA CARTE --- */
         .card {
-            background: linear-gradient(135deg, #16213e, #0f3460);
-            width: 140px; /* Plus petit que l'ouverture de pack */
-            height: 200px;
-            border: 1px solid #444;
-            border-radius: 8px;
+            width: 160px;
+            height: 240px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-around;
+            justify-content: space-between;
             position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            padding: 10px;
+            transition: transform 0.2s;
+            
+            /* Fond par défaut (Bleu nuit) */
+            background: linear-gradient(180deg, #16213e 0%, #0f3460 100%);
+            border: 2px solid #444;
+        }
+        
+        .card:hover { transform: translateY(-5px); z-index: 10; }
+
+        /* Bordures selon la rareté */
+        .card.common { border-color: #a0a0a0; box-shadow: 0 0 5px #a0a0a0; } /* Gris */
+        .card.rare { border-color: #00d2ff; box-shadow: 0 0 8px #00d2ff; }   /* Bleu néon */
+        .card.legendary { 
+            border-color: #ffd700; 
+            box-shadow: 0 0 15px #ffd700; 
+            background: linear-gradient(180deg, #2c2c1e 0%, #5e5008 100%); /* Fond doré sombre */
         }
 
-        /* Pastille de quantité (x2, x3...) */
+        /* Image du joueur (Cutout) */
+        .player-img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain; /* Important pour les images détourées */
+            object-position: bottom;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.5)); /* Ombre portée derrière le joueur */
+            z-index: 2;
+        }
+
+        /* Infos */
+        .rating { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            font-size: 1.4rem; 
+            font-weight: 800; 
+        }
+        .position {
+            position: absolute;
+            top: 35px;
+            left: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        h3 { font-size: 0.95rem; margin: 5px 0 0 0; z-index: 2; text-align: center; }
+        .team { font-size: 0.75rem; color: #ccc; margin-bottom: 5px; text-align: center; }
+
+        /* Badge quantité (x2) */
         .quantity-badge {
             position: absolute;
             top: -10px;
             right: -10px;
             background-color: #e94560;
             color: white;
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.8rem;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 2px solid #1a1a2e;
+            z-index: 20;
         }
-
-        .rating { font-size: 1.5rem; font-weight: bold; color: #fcdab7; }
-        .rarity { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; }
-        h3 { font-size: 0.9rem; margin: 0; }
-        p { font-size: 0.8rem; color: #aaa; margin: 0; }
-
-        /* Style spécial pour les Légendaires */
-        .legendary { border: 2px solid #ffd700; box-shadow: 0 0 10px #ffd700; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="btn-back">⬅ Retour à l'ouverture</a>
-
-    <h1>Mon Album Panini</h1>
-    <p>Collection : <span id="count">0</span> cartes</p>
+    <header>
+        <a href="index.html" class="btn-back">⬅ Retour à l'ouverture</a>
+        <h1>📚 Mon Album</h1>
+        <p class="stats">Cartes possédées : <span id="count">0</span></p>
+    </header>
 
     <div id="album-container">
         Chargement de ta collection...
     </div>
 
     <script>
-        // Au chargement de la page, on lance la récupération
         window.onload = chargerAlbum;
 
         async function chargerAlbum() {
@@ -94,7 +142,7 @@
             const countSpan = document.getElementById('count');
 
             try {
-                // Appel à la route qu'on a créée tout à l'heure
+                // On appelle ton API (qui va lire la BDD remplie par le script)
                 const reponse = await fetch('http://localhost:3000/my-album');
                 const mesCartes = await reponse.json();
 
@@ -108,19 +156,27 @@
 
                 // Affichage des cartes
                 mesCartes.forEach(card => {
-                    // Si c'est légendaire, on ajoute la classe CSS spéciale
-                    const classSpecial = card.rarity === 'LEGENDARY' ? 'legendary' : '';
+                    // Gestion de la classe CSS pour la rareté
+                    let rarityClass = 'common';
+                    if (card.rarity === 'RARE') rarityClass = 'rare';
+                    if (card.rarity === 'LEGENDARY') rarityClass = 'legendary';
 
-                   const cardHTML = `
-                        <div class="card ${classSpecial}">
+                    // Image par défaut si le script n'a rien trouvé
+                    const imageSrc = card.image_url || 'https://cdn-icons-png.flaticon.com/512/3048/3048122.png';
+
+                    const cardHTML = `
+                        <div class="card ${rarityClass}">
                             ${card.quantity > 1 ? `<div class="quantity-badge">x${card.quantity}</div>` : ''}
+                            
                             <div class="rating">${card.rating}</div>
+                            <div class="position">${card.position || ''}</div>
                             
-                            <img src="${card.image_url}" class="player-img" style="width:80px; height:80px; border-radius:50%; margin:5px 0;">
+                            <img src="${imageSrc}" class="player-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3048/3048122.png'">
                             
-                            <h3>${card.name}</h3>
-                            <p>${card.team}</p>
-                            <div class="rarity">${card.rarity}</div>
+                            <div>
+                                <h3>${card.name}</h3>
+                                <p class="team">${card.team}</p>
+                            </div>
                         </div>
                     `;
                     container.innerHTML += cardHTML;
@@ -128,7 +184,7 @@
 
             } catch (erreur) {
                 console.error(erreur);
-                container.innerHTML = '<p style="color:red">Erreur de chargement.</p>';
+                container.innerHTML = '<p style="color:red">Erreur de chargement. Vérifie que le serveur tourne !</p>';
             }
         }
     </script>
