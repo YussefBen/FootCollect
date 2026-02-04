@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootCollect - Ouverture de Pack</title>
+    <style>
+        /* --- LE STYLE (CSS) --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 { color: #e94560; }
+
+        /* Le bouton pour ouvrir */
+        button {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: transform 0.2s;
+            margin-bottom: 30px;
+        }
+        button:hover { transform: scale(1.05); background-color: #ff2e63; }
+
+        /* La zone où les cartes apparaissent */
+        #pack-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Le design d'une carte */
+        .card {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            width: 180px;
+            height: 260px;
+            border: 2px solid #e94560;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+            animation: popIn 0.5s ease-out;
+        }
+
+        .card h3 { margin: 0; font-size: 1.1rem; }
+        .rating { font-size: 2rem; font-weight: bold; color: #fcdab7; }
+        .rarity { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Petite animation d'apparition */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>⚽ FootCollect ⚽</h1>
+    <p>Ouvre ton pack gratuit et complète ta collection !</p>
+
+    <button onclick="ouvrirPack()">🔥 OUVRIR UN PACK 🔥</button>
+
+    <div id="pack-container">
+        </div>
+
+    <script>
+        // --- LA LOGIQUE (JAVASCRIPT) ---
+        
+        async function ouvrirPack() {
+            const container = document.getElementById('pack-container');
+            container.innerHTML = '<p>Chargement...</p>'; // Petit message d'attente
+
+            try {
+                // 1. On appelle ton API (le serveur qu'on a codé)
+                const reponse = await fetch('http://localhost:3000/pack/open');
+                const donnees = await reponse.json();
+
+                // 2. On vide le container
+                container.innerHTML = '';
+
+                // 3. On crée le HTML pour chaque carte reçue
+                donnees.cards.forEach(card => {
+                    const cardHTML = `
+                        <div class="card">
+                            <div class="rating">${card.rating}</div>
+                            <h3>${card.name}</h3>
+                            <p>${card.team || 'Club Inconnu'}</p>
+                            <div class="rarity">${card.rarity}</div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+
+            } catch (erreur) {
+                console.error("Erreur:", erreur);
+                container.innerHTML = '<p style="color:red">Erreur : Le serveur est-il allumé ?</p>';
+            }
+        }
+    </script>
+
+</body>
+</html>
