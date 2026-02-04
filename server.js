@@ -95,6 +95,7 @@ app.get('/my-album', (req, res) => {
         return res.json(data);
     });
 });
+
 app.listen(3000, () => {
-    console.log('🚀 Serveur lancé sur http://localhost:3000');
+    console.log('🚀 NOUVEAU SERVEUR AVEC ALBUM lancé sur http://localhost:3000');
 });
