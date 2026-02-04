@@ -111,10 +111,13 @@
                     // Si c'est légendaire, on ajoute la classe CSS spéciale
                     const classSpecial = card.rarity === 'LEGENDARY' ? 'legendary' : '';
 
-                    const cardHTML = `
+                   const cardHTML = `
                         <div class="card ${classSpecial}">
                             ${card.quantity > 1 ? `<div class="quantity-badge">x${card.quantity}</div>` : ''}
                             <div class="rating">${card.rating}</div>
+                            
+                            <img src="${card.image_url}" class="player-img" style="width:80px; height:80px; border-radius:50%; margin:5px 0;">
+                            
                             <h3>${card.name}</h3>
                             <p>${card.team}</p>
                             <div class="rarity">${card.rarity}</div>

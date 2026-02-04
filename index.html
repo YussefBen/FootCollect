@@ -63,6 +63,16 @@
             80% { transform: scale(1.1); }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        /* Ajoute ça dans la zone <style> */
+        .player-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover; /* Coupe l'image pour qu'elle soit ronde/carrée proprement */
+            border-radius: 50%; /* Image ronde */
+            margin: 10px 0;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -75,40 +85,74 @@
     <div id="pack-container">
         </div>
 
-    <script>
-        // --- LA LOGIQUE (JAVASCRIPT) ---
+   <script>
+        // --- LA LOGIQUE (JAVASCRIPT AVEC API WIKIPEDIA) ---
         
         async function ouvrirPack() {
             const container = document.getElementById('pack-container');
-            container.innerHTML = '<p>Chargement...</p>'; // Petit message d'attente
+            container.innerHTML = '<p>Recherche des stars...</p>';
 
             try {
-                // 1. On appelle ton API (le serveur qu'on a codé)
                 const reponse = await fetch('http://localhost:3000/pack/open');
                 const donnees = await reponse.json();
 
-                // 2. On vide le container
                 container.innerHTML = '';
 
-                // 3. On crée le HTML pour chaque carte reçue
-                donnees.cards.forEach(card => {
+                // On boucle sur chaque carte
+                for (const card of donnees.cards) {
+                    // 1. On crée un ID unique pour l'image de cette carte
+                    const imgId = `img-${card.id}`;
+                    
+                    // 2. Image par défaut (Silhouette) en attendant Wikipédia
+                    const defaultImg = 'https://cdn-icons-png.flaticon.com/512/21/21104.png';
+
                     const cardHTML = `
                         <div class="card">
                             <div class="rating">${card.rating}</div>
+                            
+                            <img id="${imgId}" src="${defaultImg}" class="player-img" alt="${card.name}">
+                            
                             <h3>${card.name}</h3>
                             <p>${card.team || 'Club Inconnu'}</p>
                             <div class="rarity">${card.rarity}</div>
                         </div>
                     `;
                     container.innerHTML += cardHTML;
-                });
+
+                    // 3. APPEL API : On lance la recherche Wikipédia pour ce joueur
+                    chargerImageWiki(card.name, imgId);
+                }
 
             } catch (erreur) {
                 console.error("Erreur:", erreur);
-                container.innerHTML = '<p style="color:red">Erreur : Le serveur est-il allumé ?</p>';
+                container.innerHTML = '<p style="color:red">Erreur serveur.</p>';
+            }
+        }
+
+        // --- FONCTION MAGIQUE API WIKIPEDIA ---
+        async function chargerImageWiki(nomJoueur, elementId) {
+            try {
+                // L'URL de l'API Wikipédia (gratuite et publique)
+                const url = `https://fr.wikipedia.org/w/api.php?action=query&titles=${nomJoueur}&prop=pageimages&format=json&pithumbsize=200&origin=*`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Wikipédia renvoie un objet un peu complexe, il faut fouiller dedans
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0]; // On prend la première page trouvée
+
+                if (pages[pageId].thumbnail) {
+                    // SI Wikipédia a une image, on remplace la silhouette !
+                    const photoUrl = pages[pageId].thumbnail.source;
+                    document.getElementById(elementId).src = photoUrl;
+                } else {
+                    console.log(`Pas d'image trouvée pour ${nomJoueur}`);
+                }
+            } catch (err) {
+                console.log("Erreur API Wiki", err);
             }
         }
     </script>
-
 </body>
 </html>
