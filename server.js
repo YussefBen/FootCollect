@@ -46,15 +46,32 @@ app.get('/cards', (req, res) => {
 });
 
 
+// Route "Ouverture de pack" AVEC SAUVEGARDE
 app.get('/pack/open', (req, res) => {
-    const sql = "SELECT * FROM cards ORDER BY RAND() LIMIT 5";
+    const sqlDraw = "SELECT * FROM cards ORDER BY RAND() LIMIT 5";
     
-    db.query(sql, (err, data) => {
+    db.query(sqlDraw, (err, drawnCards) => {
         if (err) return res.status(500).json(err);
-        
+
+  
+        const userId = 1; 
+
+     
+        drawnCards.forEach(card => {
+            const sqlSave = `
+                INSERT INTO user_collection (user_id, card_id, quantity) 
+                VALUES (?, ?, 1) 
+                ON DUPLICATE KEY UPDATE quantity = quantity + 1
+            `;
+            
+            db.query(sqlSave, [userId, card.id], (err) => {
+                if (err) console.error("Erreur de sauvegarde carte " + card.name, err);
+            });
+        });
+
         return res.json({
-            message: "Pack ouvert avec succès !",
-            cards: data
+            message: "Pack ouvert et sauvegardé !",
+            cards: drawnCards
         });
     });
 });

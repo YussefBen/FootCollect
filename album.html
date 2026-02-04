@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Album - FootCollect</title>
+    <style>
+        /* --- MÊME STYLE QUE L'ACCUEIL --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { color: #fcdab7; }
+        
+        /* Bouton retour */
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #e94560;
+            text-decoration: none;
+            border: 1px solid #e94560;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        /* Grille de l'album */
+        #album-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Permet de passer à la ligne */
+        }
+
+        /* Carte dans l'album (plus petite) */
+        .card {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            width: 140px; /* Plus petit que l'ouverture de pack */
+            height: 200px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            position: relative;
+        }
+
+        /* Pastille de quantité (x2, x3...) */
+        .quantity-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #e94560;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .rating { font-size: 1.5rem; font-weight: bold; color: #fcdab7; }
+        .rarity { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; }
+        h3 { font-size: 0.9rem; margin: 0; }
+        p { font-size: 0.8rem; color: #aaa; margin: 0; }
+
+        /* Style spécial pour les Légendaires */
+        .legendary { border: 2px solid #ffd700; box-shadow: 0 0 10px #ffd700; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="btn-back">⬅ Retour à l'ouverture</a>
+
+    <h1>Mon Album Panini</h1>
+    <p>Collection : <span id="count">0</span> cartes</p>
+
+    <div id="album-container">
+        Chargement de ta collection...
+    </div>
+
+    <script>
+        // Au chargement de la page, on lance la récupération
+        window.onload = chargerAlbum;
+
+        async function chargerAlbum() {
+            const container = document.getElementById('album-container');
+            const countSpan = document.getElementById('count');
+
+            try {
+                // Appel à la route qu'on a créée tout à l'heure
+                const reponse = await fetch('http://localhost:3000/my-album');
+                const mesCartes = await reponse.json();
+
+                container.innerHTML = '';
+                countSpan.innerText = mesCartes.length;
+
+                if (mesCartes.length === 0) {
+                    container.innerHTML = '<p>Ton album est vide ! Va ouvrir des packs.</p>';
+                    return;
+                }
+
+                // Affichage des cartes
+                mesCartes.forEach(card => {
+                    // Si c'est légendaire, on ajoute la classe CSS spéciale
+                    const classSpecial = card.rarity === 'LEGENDARY' ? 'legendary' : '';
+
+                    const cardHTML = `
+                        <div class="card ${classSpecial}">
+                            ${card.quantity > 1 ? `<div class="quantity-badge">x${card.quantity}</div>` : ''}
+                            <div class="rating">${card.rating}</div>
+                            <h3>${card.name}</h3>
+                            <p>${card.team}</p>
+                            <div class="rarity">${card.rarity}</div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+
+            } catch (erreur) {
+                console.error(erreur);
+                container.innerHTML = '<p style="color:red">Erreur de chargement.</p>';
+            }
+        }
+    </script>
+
+</body>
+</html>
