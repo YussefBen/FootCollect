@@ -76,6 +76,25 @@ app.get('/pack/open', (req, res) => {
     });
 });
 
+
+// --- Route manquante pour l'Album ---
+app.get('/my-album', (req, res) => {
+
+    const sql = `
+        SELECT cards.*, user_collection.quantity 
+        FROM user_collection 
+        JOIN cards ON user_collection.card_id = cards.id 
+        WHERE user_collection.user_id = 1
+    `;
+
+    db.query(sql, (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json(err);
+        }
+        return res.json(data);
+    });
+});
 app.listen(3000, () => {
     console.log('🚀 Serveur lancé sur http://localhost:3000');
 });
