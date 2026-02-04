@@ -64,14 +64,18 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Ajoute ça dans la zone <style> */
+       
         .player-img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover; /* Coupe l'image pour qu'elle soit ronde/carrée proprement */
-            border-radius: 50%; /* Image ronde */
-            margin: 10px 0;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            width: 120px;  
+            height: 120px; 
+            object-fit: cover;   
+            object-position: center top; 
+            border-radius: 50%;  
+            border: 4px solid #e94560; 
+            margin: 15px auto; 
+            display: block; 
+            background-color: #0f3460; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -85,29 +89,34 @@
     <div id="pack-container">
         </div>
 
-   <script>
-        // --- LA LOGIQUE (JAVASCRIPT AVEC API WIKIPEDIA) ---
+ <script>
+        // --- LOGIQUE AVEC L'API "THE SPORTS DB" ---
         
         async function ouvrirPack() {
             const container = document.getElementById('pack-container');
-            container.innerHTML = '<p>Recherche des stars...</p>';
+            container.innerHTML = '<p style="font-size:1.5rem;">🔥 Scouting en cours... 🔥</p>';
 
             try {
+                // 1. On demande les cartes à ton serveur local
                 const reponse = await fetch('http://localhost:3000/pack/open');
                 const donnees = await reponse.json();
 
                 container.innerHTML = '';
 
-                // On boucle sur chaque carte
+                // 2. On boucle sur chaque carte
                 for (const card of donnees.cards) {
-                    // 1. On crée un ID unique pour l'image de cette carte
                     const imgId = `img-${card.id}`;
                     
-                    // 2. Image par défaut (Silhouette) en attendant Wikipédia
-                    const defaultImg = 'https://cdn-icons-png.flaticon.com/512/21/21104.png';
+                    // Image de secours (Silhouette)
+                    const defaultImg = 'https://cdn-icons-png.flaticon.com/512/3048/3048122.png';
+
+                    // On détermine la bordure selon la rareté
+                    let rarityClass = '';
+                    if (card.rarity === 'LEGENDARY') rarityClass = 'legendary-border';
+                    else if (card.rarity === 'RARE') rarityClass = 'rare-border';
 
                     const cardHTML = `
-                        <div class="card">
+                        <div class="card ${rarityClass}">
                             <div class="rating">${card.rating}</div>
                             
                             <img id="${imgId}" src="${defaultImg}" class="player-img" alt="${card.name}">
@@ -119,8 +128,8 @@
                     `;
                     container.innerHTML += cardHTML;
 
-                    // 3. APPEL API : On lance la recherche Wikipédia pour ce joueur
-                    chargerImageWiki(card.name, imgId);
+                    // 3. APPEL API EXTERNE (TheSportsDB)
+                    chargerImageSportsDB(card.name, imgId);
                 }
 
             } catch (erreur) {
@@ -129,28 +138,38 @@
             }
         }
 
-        // --- FONCTION MAGIQUE API WIKIPEDIA ---
-        async function chargerImageWiki(nomJoueur, elementId) {
+        async function chargerImageSportsDB(nomJoueur, elementId) {
             try {
-                // L'URL de l'API Wikipédia (gratuite et publique)
-                const url = `https://fr.wikipedia.org/w/api.php?action=query&titles=${nomJoueur}&prop=pageimages&format=json&pithumbsize=200&origin=*`;
+                // Astuce : On nettoie le nom (ex: "Kylian Mbappé" -> "Kylian Mbappe") pour aider l'API
+                // L'API préfère les noms sans accents anglais
+                const nomClean = nomJoueur.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                // URL de l'API (Clé gratuite '3')
+                const url = `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${nomClean}`;
 
                 const response = await fetch(url);
                 const data = await response.json();
 
-                // Wikipédia renvoie un objet un peu complexe, il faut fouiller dedans
-                const pages = data.query.pages;
-                const pageId = Object.keys(pages)[0]; // On prend la première page trouvée
+                if (data.player && data.player[0]) {
+                    const joueur = data.player[0];
+                    
+                    // ON CHERCHE LA MEILLEURE IMAGE DISPONIBLE
+                    // Priorité 1 : strCutout (Joueur détouré sur fond transparent, style FIFA !)
+                    // Priorité 2 : strThumb (Photo de profil carrée)
+                    // Priorité 3 : strRender (Autre type de détourage)
+                    
+                    let photoUrl = joueur.strCutout || joueur.strThumb || joueur.strRender;
 
-                if (pages[pageId].thumbnail) {
-                    // SI Wikipédia a une image, on remplace la silhouette !
-                    const photoUrl = pages[pageId].thumbnail.source;
-                    document.getElementById(elementId).src = photoUrl;
+                    if (photoUrl) {
+                        document.getElementById(elementId).src = photoUrl;
+                        // Si c'est un cutout, on peut changer le fond en CSS pour faire stylé
+                        document.getElementById(elementId).style.backgroundColor = "transparent"; 
+                    }
                 } else {
-                    console.log(`Pas d'image trouvée pour ${nomJoueur}`);
+                    console.log(`Pas trouvé sur SportsDB : ${nomClean}`);
                 }
             } catch (err) {
-                console.log("Erreur API Wiki", err);
+                console.log("Erreur API SportsDB", err);
             }
         }
     </script>
