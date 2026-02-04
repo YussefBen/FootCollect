@@ -10,22 +10,13 @@ const dbConfig = {
 
 // LA LISTE DES CLUBS (Europe, AmSud, Monde)
 const teams = [
-    // 🇬🇧 Angleterre
-    'Manchester City', 'Arsenal', 'Liverpool', 'Manchester United', 'Chelsea', 'Tottenham',
-    // 🇪🇸 Espagne
-    'Real Madrid', 'FC Barcelona', 'Atletico Madrid',
-    // 🇫🇷 France
-    'Paris Saint-Germain', 'Marseille', 'Monaco', 'Lyon',
-    // 🇩🇪 Allemagne
-    'Bayern Munich', 'Borussia Dortmund', 'Bayer Leverkusen',
-    // 🇮🇹 Italie
-    'Juventus', 'AC Milan', 'Inter Milan', 'Napoli', 'AS Roma',
-    // 🇵🇹 Portugal / 🇳🇱 Pays-Bas
-    'Benfica', 'Porto', 'Ajax',
-    // 🇧🇷 Brésil / 🇦🇷 Argentine
-    'Flamengo', 'Palmeiras', 'Boca Juniors', 'River Plate',
-    // 🇸🇦 Arabie Saoudite / 🇺🇸 USA
-    'Al Hilal', 'Al Nassr', 'Inter Miami'
+    'Arsenal', 'Aston Villa', 'Chelsea', 'Liverpool', 'Manchester City', 'Manchester United', 'Tottenham', // Anglais
+    'Real Madrid', 'FC Barcelona', 'Atletico Madrid', 'Sevilla', // Espagnols
+    'Paris Saint-Germain', 'Marseille', 'Monaco', 'Lille', // Français
+    'Bayern Munich', 'Borussia Dortmund', 'Bayer Leverkusen', // Allemands
+    'Juventus', 'AC Milan', 'Inter Milan', 'Napoli', // Italiens
+    'Benfica', 'Porto', 'Ajax', // Autres Europe
+    'Inter Miami', 'Al Hilal' // Monde
 ];
 
 // Fonction pour faire une pause (pour ne pas énerver l'API)
